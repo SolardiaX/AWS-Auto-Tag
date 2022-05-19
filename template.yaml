@@ -1,0 +1,180 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Auto Tag SAM Application
+
+Parameters:
+  EnableLog:
+    Type: String
+    Description: Enable/Disable Lambda log
+    Default: 'True'
+    AllowedValues: ['True', 'False']
+  LogRetentionInDays:
+    Type: Number
+    Description: Logs of Lambda retention in days (-1 means always retention)
+    Default: -1
+    AllowedValues: [ -1, 7, 15, 30, 60, 90, 180 ]
+
+Conditions:
+  LogRetentionInDaysSet: !Not [!Equals [!Ref LogRetentionInDays, -1]]
+
+Resources:
+  AutoTagFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Lambda Funtion to Auto Tag Resources
+      CodeUri: src/
+      Handler: listener.lambda_handler
+      Runtime: python3.9
+      Timeout: 10
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EnableLog: !Ref EnableLog
+
+  AutoTagFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AutoTagFunction}'
+      RetentionInDays: !If [ LogRetentionInDaysSet, !Ref LogRetentionInDays, !Ref AWS::NoValue ]
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}LambdaRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}LambdaPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*
+              - Effect: Allow
+                Action:
+                  - 'autoscaling:CreateOrUpdateTags'
+                  - 'cloudformation:TagResource'
+                  - 'cloudfront:TagResource'
+                  - 'cloudformation:UpdateStack'
+                  - 'cloudtrail:TagResource'
+                  - 'cloudwatch:TagResource'
+                  - 'datapipeline:AddTags'
+                  - 'dynamodb:TagResource'
+                  - 'ec2:CreateTags'
+                  - 'ec2:DescribeInstances'
+                  - 'efs:TagResource'
+                  - 'events:TagResource'
+                  - 'elasticloadbalancing:AddTags'
+                  - 'elasticmapreduce:AddTags'
+                  - 'iam:TagRole'
+                  - 'iam:TagUser'
+                  - 'kms:TagResource'
+                  - 'lambda:TagResource'
+                  - 'logs:TagLogGroup'
+                  - 'rds:AddTagsToResource'
+                  - 's3:PutBucketTagging'
+                Resource: '*'
+
+  EventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: AutoTag-CloudTrail-Events
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt AutoTagFunction.Arn
+          Id: Main
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'autoscaling.amazonaws.com'
+            - 'cloudformation.amazonaws.com'
+            - 'cloudtrail.amazonaws.com'
+            - 'cloudfront.amazonaws.com'
+            - 'datapipeline.amazonaws.com'
+            - 'dynamodb.amazonaws.com'
+            - 'ec2.amazonaws.com'
+            - 'elasticfilesystem.amazonaws.com'
+            - 'elasticloadbalancing.amazonaws.com'
+            - 'elasticmapreduce.amazonaws.com'
+            - 'events.amazonaws.com'
+            - 'iam.amazonaws.com'
+            - 'lambda.amazonaws.com'
+            - 'logs.amazonaws.com'
+            - 'monitoring.amazonaws.com'
+            - 'rds.amazonaws.com'
+            - 's3.amazonaws.com'
+          eventName:
+            - 'AllocateAddress'
+            - 'CloneStack'
+            - 'CopyImage'
+            - 'CopySnapshot'
+            - 'CreateAutoScalingGroup'
+            - 'CreateBucket'
+            - 'CreateChangeSet'
+            - 'CreateCustomerGateway'
+            - 'CreateDBInstance'
+            - 'CreateDhcpOptions'
+            - 'CreateDistribution'
+            - 'CreateFileSystem'
+            - 'CreateFunction20150331'
+            - 'CreateFunction20141111'
+            - 'CreateImage'
+            - 'CreateInternetGateway'
+            - 'CreateLoadBalancer'
+            - 'CreateLogGroup'
+            - 'CreateNatGateway'
+            - 'CreateNetworkAcl'
+            - 'CreateNetworkInterface'
+            - 'CreatePipeline'
+            - 'CreateRole'
+            - 'CreateRouteTable'
+            - 'CreateSecurityGroup'
+            - 'CreateSnapshot'
+            - 'CreateStack'
+            - 'CreateSubnet'
+            - 'CreateTable'
+            - 'CreateTrail'
+            - 'CreateUser'
+            - 'CreateVolume'
+            - 'CreateVpc'
+            - 'CreateVpnConnection'
+            - 'CreateVpnGateway'
+            - 'CreateVpcPeeringConnection'
+            - 'ImportSnapshot'
+            - 'PutMetricAlarm'
+            - 'PutRule'
+            - 'RegisterImage'
+            - 'RunInstances'
+            - 'RunJobFlow'
+
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    DependsOn: AutoTagFunction
+    Properties:
+      FunctionName: !GetAtt AutoTagFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt EventRule.Arn
+
+Outputs:
+  AutoTagFunction:
+    Description: 'Lambda function to auto tag resources'
+    Value: !GetAtt AutoTagFunction.Arn
+  LambdaRole:
+    Description: 'IAM Role used to execute the AutoTagFunction'
+    Value: !Ref LambdaRole
+  EventRule:
+    Description: 'Auto-tag resources with Lambda from CloudTrail events'
+    Value: !Ref EventRule

@@ -1,0 +1,38 @@
+{
+  "trigger": {
+    "services": [
+      {
+        "cloudtrail": [
+          "*"
+        ]
+      }
+    ],
+    "excluded": true
+  },
+  "tags": [
+    {
+      "key": "TaggedBy",
+      "value": "auto-tag"
+    },
+    {
+      "key": "TaggedAt",
+      "value": "datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')"
+    },
+    {
+      "key": "ForSpecSerivces",
+      "value": "true",
+      "services": [
+        "ec2",
+        "ebs"
+      ]
+    },
+    {
+      "key": "AfterSpecTime",
+      "value": "true",
+      "services": [
+        "s3"
+      ],
+      "condition": "time.strptime(event.detail.eventTime, '%Y-%m-%dT%H:%M:%SZ') > time.strptime('2022-02-02T22:22:22Z', '%Y-%m-%dT%H:%M:%SZ')"
+    }
+  ]
+}
