@@ -203,7 +203,7 @@ The original CloudTrail event is auto injected as `event` variable, and can be d
 ```py
 event.get('detail').get('eventTime')
 event.detail.eventTIme
-# both will output the event time value of event. 
+# both will output the 'eventTime' value of event. 
 # If the event original message is 
 #	{
 #		...
@@ -217,7 +217,7 @@ event.detail.eventTIme
 # The expression output will be `2022-02-02T22:22:22Z`
 ```
 
-> NOTES: The js dot style **DO NOT** check None/null property access, please use it carefully.
+> NOTES: The js dot style **DO NOT** check none/null property, please use it carefully.
 
 #### Apply
 
