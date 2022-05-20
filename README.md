@@ -2,9 +2,9 @@
 
 ## About
 
-AWS-Auto-Tag is an open to use solution that can tag AWS resources when they are being created. The tag can be set by a json format config, support use key/value with condition or expression, support set tag(s) from special service(s).
+AWS-Auto-Tag is an open-use solution to tag AWS resources as they are created. Tags can be set by json format configuration, supports using of expression keys/values, conditional control and restrict for specific service.
 
-The application use CloudWatch Rule to listen CloudTrail Log and trigger Lambda function to tag the tags on event sources. A lots of services are already supported:
+The application using CloudWatch Rule to listen CloudTrail events and trigger Lambda function to tag the tags on event sources. A lots of services with events are already supported:
 
 * AMI: CreateImage, CopyImage, RegisterImage
 * Auto Scaling: CreateAutoScalingGroup
@@ -43,7 +43,7 @@ The application use CloudWatch Rule to listen CloudTrail Log and trigger Lambda 
 
 
 
-This project contains all source code and supporting files that can be deployed with the SAM CLI. It includes the following files and folders.
+This project contains all source codes and supporting files that can be deployed with the SAM CLI. It includes the following files and folders.
 
 - src - Source codes for the application's Lambda function.
 - config - Config template and script to desgin and apply your own config.
@@ -168,19 +168,19 @@ Application is using a lambda env. variable **CONFIG** to store the runtime opti
   * **trigger** (dict) - Includes/Excludes services or service events to trigger the lambda to execute auto tag work. If it’s empty, means for all buildin supported services.
     * **services** (list) - The list of services or service events should include/exclude.
       * (dict) - A dict to define a service and events should include/exclude.
-        * (key: string) - The sevice name, refer to the buildin defines in `src/config/supported.py`.
-        * (value: list) - The service events, `*` means all supported events. refer to the buildin defines in `src/config/supported.py`.
-    * **excluded** (bool) - If `true`, All services and events defined in `services` will be excluded. If `false`(by default), will only enable services and events defined in `services` to trigger tag work.
+        * (key: string) - The sevice name. See buildin defines in `src/config/supported.py`.
+        * (value: list) - The service events, `*` means all supported events. See buildin defines in `src/config/supported.py`.
+    * **excluded** (bool) - If `true`, All services and events defined in `services` will be excluded. If `false`(by default), will only enable services and events defined in `services` can be triggered to execute tag work.
   * **tags** (list) - The tag(s) will to tag on AWS resources.
     * (dict) - A tag define.
-      * **key** (string) - The `key` of tag, can be a static string or *<u>evaluable</u>* string expression. See `Expression`.
-      * **value** (string) - The `value` of tag, can be a static string or *<u>evaluable</u>* string expression. See `Expression`.
-      * **services** (list) - The special services the tag will be applied to. Refer to the buildin defines in `src/config/supported.py`.
-      * **condition** (str) - Evaluable expression condition before tag the tag on resources, only the eval result is `true` the tag will can be applied. See `Expression`.
+      * **key** (string) - The `key` of tag, can be a static string or *<u>evaluable</u>* expression. See more details in `Expression` section.
+      * **value** (string) - The `value` of tag, can be a static string or *<u>evaluable</u>* expression. See more details in `Expression` section.
+      * **services** (list) - The special services the tag will be applied to. See buildin defines in `src/config/supported.py`.
+      * **condition** (str) - Evaluable expression condition before execute the tag works on resources, only the eval result is `true` the tag will can be applied. See more details in `Expression` section.
 
 #### Expression
 
-Auto-Tag support dynamic eval a string expression to and use the result for tag key/value or tag condition.
+Support dynamic eval a string expression and use the result for tag key/value or tag condition.
 
 For expression used with tag key/value, the eval result **MUST** be `str`.
 
@@ -198,7 +198,7 @@ time.strptime(event.detail.eventTime, '%Y-%m-%dT%H:%M:%SZ') > time.strptime('202
 
 The string expression use `Python` script pattern with python buildin `datetime`, `time`, `math` modules support.
 
-The original CloudTrail event is auto injected as `event` variable, and can be direct used in expression. This variable support python dict method and js dot style properties access.
+The original CloudTrail event is auto injected as `event` variable, and can be direct used in expression. This variable support python dict method and js dot properties access style.
 
 ```py
 event.get('detail').get('eventTime')
@@ -216,6 +216,8 @@ event.detail.eventTIme
 #	}
 # The expression output will be `2022-02-02T22:22:22Z`
 ```
+
+> NOTES: The js dot style **DO NOT** check None/null property access, please use it carefully.
 
 #### Apply
 
