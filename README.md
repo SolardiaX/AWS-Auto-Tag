@@ -239,7 +239,7 @@ You can apply the config to lambda function by AWS Console GUI or execute a pyth
   python config/apply.py
   ```
 
-> Notes: Please apply the config each time after you update the application with sam deploy.
+> Notes: The config need be applied each time after you update the application by `sam deploy`.
 
 ### Cost
 
