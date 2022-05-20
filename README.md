@@ -180,15 +180,15 @@ Application is using a lambda env. variable **CONFIG** to store the runtime opti
 
 #### Expression
 
-Support dynamic eval a string expression and use the result for tag key/value or tag condition.
+Support dynamic eval a string expression and use the result for tag’s key/value or tag condition.
 
-For expression used with tag key/value, the eval result **MUST** be `str`.
+For expression used for tag’s key/value, the eval result **MUST** be `str`.
 
 ```python
 datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ') # output current datetime in YYYY-MM-DDTHH:mm:ssZ format.
 ```
 
-For expression used with tag condition, the eval result **MUST** be `bool`.
+For expression used for tag condition, the eval result **MUST** be `bool`.
 
 ```python
 time.strptime(event.detail.eventTime, '%Y-%m-%dT%H:%M:%SZ') > time.strptime('2022-02-02T22:22:22Z', '%Y-%m-%dT%H:%M:%SZ') # output whether the CloudTrail event time is after the UTC time 2022-02-02 22:22:22.
