@@ -67,7 +67,7 @@ To use the SAM CLI, you need the following tools.
 * SAM CLI - [How to Install](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 * Python3.9 (Only used for config runtime env. with cli) - [Download Python](https://www.python.org/downloads/)
 
-> To deploy this application you must have a AKSK with IAM role has full access to Lambda, DynamoDB and SQS.
+> To deploy this application you must have a AKSK with IAM admin role.
 
 Before use the SAM CLI, you should set up you aws cli credential first, run the following in your shell:
 
@@ -238,6 +238,8 @@ You can apply the config to lambda function by AWS Console GUI or execute a pyth
   ```python
   python config/apply.py
   ```
+
+> Notes: Please apply the config each time after you update the application with sam deploy.
 
 ### Cost
 
