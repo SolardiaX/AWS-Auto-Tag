@@ -2,7 +2,7 @@
 
 ## About
 
-AWS-Auto-Tag is an open-use solution to tag AWS resources as they are created. Tags can be set by json format configuration, supports using of expression keys/values, conditional control and restrict for specific service.
+AWS-Auto-Tag is an open-to-use solution to tag AWS resources when they are created. Tags can be set by json format configuration, support using of expression keys/values, conditional and restrict for specific service.
 
 The application using CloudWatch Rule to listen CloudTrail events and trigger Lambda function to tag the tags on event sources. A lots of services with events are already supported:
 
@@ -76,8 +76,6 @@ aws configure
 ```
 
 For more information, please see the [AWS CLI document](https://docs.aws.amazon.com/zh_cn/cli/latest/userguide/cli-chap-configure.html).
-
-To deploy your application for the first time, run the following in your shell:
 
 To deploy your application for the first time, run the following in your shell:
 
